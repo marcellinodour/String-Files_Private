@@ -13,11 +13,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableList;
 
 public class MyStringFilesUtils implements StringFilesUtils {
-	private String stringLocalReferenceFolder;
 	private Path pathLocalReferenceFolder;
 
 	public static MyStringFilesUtils newInstance() {
@@ -25,21 +25,19 @@ public class MyStringFilesUtils implements StringFilesUtils {
 	}
 
 	private MyStringFilesUtils() {
-		this.stringLocalReferenceFolder = ".";
 		this.pathLocalReferenceFolder = Path.of(".");
 	}
 
 	@Override
 	public boolean setReferenceFolder(Path referenceFolder) throws IOException {
-
-		if (referenceFolder.normalize().equals(Path.of(stringLocalReferenceFolder).normalize())) {
+		
+		checkNotNull(referenceFolder, "This string cannot be null");
+		
+		if (referenceFolder.normalize().equals(this.pathLocalReferenceFolder.normalize())) {
 			return false;
 		}
 
-		String pathFolder = referenceFolder.toString();
-
 		this.pathLocalReferenceFolder = referenceFolder;
-		this.stringLocalReferenceFolder = pathFolder;
 
 		return true;
 
@@ -47,17 +45,19 @@ public class MyStringFilesUtils implements StringFilesUtils {
 
 	@Override
 	public String getAbsolutePath(String pathRelativeToReference) {
-		Path path = Path.of(pathRelativeToReference);
-
-		this.pathLocalReferenceFolder = path.toAbsolutePath();
-
-		return this.pathLocalReferenceFolder.toString();
+		
+		return this.pathLocalReferenceFolder.resolve(pathRelativeToReference).toAbsolutePath().toString();
+		
 	}
 
 	@Override
 	public ImmutableList<String> getContentUsingIso88591Charset(String pathRelativeToReference) throws IOException {
 
 		Path filePath = this.pathLocalReferenceFolder.resolve(pathRelativeToReference);
+		
+		if(! Files.exists(filePath)) {
+			throw new IOException();
+		}
 
 		List<String> listReturn = Files.readAllLines(filePath, StandardCharsets.ISO_8859_1);
 
