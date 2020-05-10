@@ -53,7 +53,7 @@ public class MyStringFilesUtils implements StringFilesUtils {
 			return this.pathLocalReferenceFolder.resolve(Path.of(".")).toAbsolutePath().toString();
 		}
 
-		return this.pathLocalReferenceFolder.resolve(pathRelativeToReference).toAbsolutePath().toString();
+		return this.pathLocalReferenceFolder.resolve(pathRelativeToReference).toAbsolutePath().normalize().toString();
 
 	}
 
@@ -87,7 +87,7 @@ public class MyStringFilesUtils implements StringFilesUtils {
 		checkNotNull(pathRelativeToCurrent, "This argument cannot be null");
 
 		if(pathRelativeToCurrent.equals(".") || pathRelativeToCurrent.equals("")) {
-			return this.pathLocalReferenceFolder.relativize(Path.of(".")).toString();
+			return this.pathLocalReferenceFolder.relativize(Path.of(".")).normalize().toString();
 		}
 
 		if(Path.of(pathRelativeToCurrent).isAbsolute()) {
@@ -96,6 +96,6 @@ public class MyStringFilesUtils implements StringFilesUtils {
 
 		Path relativeToCurrent = Path.of(pathRelativeToCurrent);
 
-		return this.pathLocalReferenceFolder.relativize(relativeToCurrent).toString();
+		return this.pathLocalReferenceFolder.relativize(relativeToCurrent).normalize().toString();
 	}
 }
