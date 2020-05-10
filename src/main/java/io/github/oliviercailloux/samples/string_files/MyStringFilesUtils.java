@@ -23,14 +23,18 @@ public class MyStringFilesUtils implements StringFilesUtils {
 
 	@Override
 	public boolean setReferenceFolder(Path referenceFolder) throws IOException {
-		
+
 		checkNotNull(referenceFolder, "This argument cannot be null");
-		
+
 		if (referenceFolder.normalize().equals(this.pathLocalReferenceFolder.normalize())) {
 			return false;
 		}
-		
-		this.pathLocalReferenceFolder = referenceFolder;
+
+		try {
+			this.pathLocalReferenceFolder = referenceFolder;
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 
 		return true;
 
@@ -38,51 +42,58 @@ public class MyStringFilesUtils implements StringFilesUtils {
 
 	@Override
 	public String getAbsolutePath(String pathRelativeToReference) {
-		
+
 		checkNotNull(pathRelativeToReference, "This argument cannot be null");
-		
+
 		if(Path.of(pathRelativeToReference).isAbsolute()) {
 			throw new IllegalArgumentException("This argument cannot be an absolute path");
 		}
-		
+
 		if(pathRelativeToReference.equals(".") || pathRelativeToReference.equals("")) {
-			return this.pathLocalReferenceFolder.toAbsolutePath().toString();
+			return this.pathLocalReferenceFolder.resolve(Path.of(".")).toAbsolutePath().toString();
 		}
-		
+
 		return this.pathLocalReferenceFolder.resolve(pathRelativeToReference).toAbsolutePath().toString();
-		
+
 	}
 
 	@Override
 	public ImmutableList<String> getContentUsingIso88591Charset(String pathRelativeToReference) throws IOException {
-		
+
 		checkNotNull(pathRelativeToReference, "This argument cannot be null");
-		
+
 		if(Path.of(pathRelativeToReference).isAbsolute()) {
 			throw new IllegalArgumentException("This argument cannot be an absolute path");
 		}
 
 		Path filePath = this.pathLocalReferenceFolder.resolve(pathRelativeToReference);
-		
-		List<String> listReturn = Files.readAllLines(filePath, StandardCharsets.ISO_8859_1);
 
-		return ImmutableList.copyOf(listReturn);
+		try {
+
+			List<String> listReturn = Files.readAllLines(filePath, StandardCharsets.ISO_8859_1);
+			return ImmutableList.copyOf(listReturn);
+
+		} catch (Exception e) {
+
+			throw new IOException(e);
+
+		}
 
 	}
 
 	@Override
 	public String getPathRelativeToReference(String pathRelativeToCurrent) {
-		
+
 		checkNotNull(pathRelativeToCurrent, "This argument cannot be null");
-		
+
 		if(pathRelativeToCurrent.equals(".") || pathRelativeToCurrent.equals("")) {
 			return this.pathLocalReferenceFolder.relativize(Path.of(".")).toString();
 		}
-		
+
 		if(Path.of(pathRelativeToCurrent).isAbsolute()) {
 			throw new IllegalArgumentException("This argument cannot be an absolute path");
 		}
-		
+
 		Path relativeToCurrent = Path.of(pathRelativeToCurrent);
 
 		return this.pathLocalReferenceFolder.relativize(relativeToCurrent).toString();
